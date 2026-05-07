@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sijin's Fitness">
+<meta name="theme-color" content="#020817">
+<link rel="manifest" href="manifest.json">
+<title>Sijin's Fitness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020817;
+  --bg2: #080f22;
+  --bg3: #0d1a35;
+  --card: rgba(13,26,53,0.75);
+  --card-solid: #0d1a35;
+  --border: rgba(59,130,246,0.18);
+  --blue: #3b82f6;
+  --blue2: #60a5fa;
+  --blue-glow: rgba(59,130,246,0.25);
+  --P: #ef4444;
+  --C: #3b82f6;
+  --F: #eab308;
+  --text: #f1f5f9;
+  --sub: #94a3b8;
+  --muted: #475569;
+  --green: #22c55e;
+  --r: 16px;
+  --nav-h: 68px;
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Exo 2',sans-serif;color:var(--text)}
+#root{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── SCROLLABLE AREA ── */
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + var(--sab) + 24px);scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+
+/* ── NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h) + var(--sab));padding-bottom:var(--sab);background:rgba(2,8,23,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;align-items:center;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;color:var(--muted);transition:color .2s;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.nav-item.on{color:var(--blue2)}
+.nav-icon{font-size:22px;transition:transform .2s}
+.nav-item.on .nav-icon{transform:scale(1.15)}
+
+/* ── FAB ── */
+.fab{position:fixed;bottom:calc(var(--nav-h) + var(--sab) + 18px);right:20px;width:54px;height:54px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:50%;border:none;color:#fff;font-size:30px;font-weight:200;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99;box-shadow:0 4px 24px rgba(59,130,246,.5);transition:transform .15s;line-height:1}
+.fab:active{transform:scale(.9)}
+
+/* ── PAGE HEADER ── */
+.ph{padding:52px 18px 12px;position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--bg) 70%,transparent)}
+.ph-title{font-size:26px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(135deg,#f1f5f9 0%,#93c5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ph-sub{font-size:12px;color:var(--sub);margin-top:2px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.px{padding:0 18px}
+
+/* ── SUMMARY CARD ── */
+.sum-card{margin:0 18px 16px;background:linear-gradient(135deg,rgba(13,26,53,.95) 0%,rgba(29,78,216,.2) 100%);border:1px solid var(--border);border-radius:22px;padding:18px;position:relative;overflow:hidden}
+.sum-card::after{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:radial-gradient(circle,rgba(59,130,246,.1) 0%,transparent 70%);pointer-events:none}
+.sum-inner{display:flex;align-items:center;gap:16px}
+.sum-right{flex:1;min-width:0}
+.cal-row{margin-bottom:14px}
+.cal-num{font-size:30px;font-weight:900;font-family:'Space Mono',monospace;line-height:1;color:var(--text)}
+.cal-denom{font-size:13px;color:var(--sub);margin-top:1px}
+.macro-list{display:flex;flex-direction:column;gap:7px}
+.macro-row{display:flex;align-items:center;gap:7px}
+.m-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.m-label{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;font-weight:600;width:12px}
+.m-bar-wrap{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.m-bar{height:100%;border-radius:2px;transition:width .5s ease}
+.m-val{font-size:11px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);white-space:nowrap}
+.m-goal{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;white-space:nowrap}
+
+/* ── LOG TABLE ── */
+.sec-title{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;margin:16px 18px 8px}
+.log-wrap{margin:0 18px}
+.log-table{width:100%;border-collapse:collapse;font-size:11px}
+.log-table th{color:var(--muted);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.07em;padding:6px 4px;text-align:left;border-bottom:1px solid var(--border)}
+.log-table td{padding:9px 4px;border-bottom:1px solid rgba(59,130,246,.06);vertical-align:middle}
+.log-table tr:last-child td{border-bottom:none}
+.food-nm{font-weight:700;font-size:11px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.food-sv{font-size:9px;color:var(--sub)}
+.mono{font-family:'Space Mono',monospace}
+.del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:6px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.del-btn:active{color:#ef4444;background:rgba(239,68,68,.1)}
+.empty-log{text-align:center;padding:36px 16px;color:var(--muted)}
+.empty-icon{font-size:38px;margin-bottom:8px;opacity:.5}
+.empty-txt{font-size:13px}
+
+/* ── REPORTS BTN ── */
+.rpt-btn{margin:12px 18px 0;width:calc(100% - 36px);padding:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--blue2);font-size:13px;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .2s}
+.rpt-btn:active{background:var(--bg3)}
+
+/* ── MODAL OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:flex;flex-direction:column;justify-content:flex-end;animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* ── BOTTOM SHEET ── */
+.sheet{background:var(--bg2);border-radius:24px 24px 0 0;border-top:1px solid var(--border);max-height:91dvh;display:flex;flex-direction:column;padding-bottom:calc(var(--sab) + 12px);animation:slideup .3s cubic-bezier(.32,.72,0,1)}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--muted);border-radius:2px;margin:12px auto 14px}
+.sheet-head{padding:0 18px 12px;display:flex;align-items:center;justify-content:space-between}
+.sheet-title{font-size:20px;font-weight:800}
+.close-btn{width:30px;height:30px;background:var(--card);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sub);font-size:16px;flex-shrink:0}
+
+/* ── SEARCH ── */
+.search{margin:0 18px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:8px;padding:0 12px}
+.search input{flex:1;background:none;border:none;color:var(--text);font-size:14px;font-family:'Exo 2',sans-serif;padding:11px 0;outline:none}
+.search input::placeholder{color:var(--muted)}
+.search-ico{color:var(--muted);font-size:15px;flex-shrink:0}
+
+/* ── CAT TABS ── */
+.cat-row{display:flex;gap:7px;padding:0 18px 12px;overflow-x:auto;scrollbar-width:none}
+.cat-row::-webkit-scrollbar{display:none}
+.cat-pill{flex-shrink:0;padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:var(--card);color:var(--sub);letter-spacing:.03em}
+.cat-pill.on{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ── FOOD CARDS (picker) ── */
+.cards-list{flex:1;overflow-y:auto;padding:0 18px 16px;display:flex;flex-direction:column;gap:9px;scrollbar-width:none}
+.cards-list::-webkit-scrollbar{display:none}
+.f-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px;display:flex;align-items:center;gap:11px;position:relative;min-height:80px}
+.f-info{flex:1;min-width:0;padding-right:60px}
+.f-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-serv{font-size:10px;color:var(--sub);margin-top:1px}
+.f-kcal{font-size:12px;font-weight:700;color:var(--blue2);font-family:'Space Mono',monospace;margin-top:3px}
+.f-stars{position:absolute;top:10px;right:11px}
+.f-actions{position:absolute;bottom:9px;right:9px;display:flex;align-items:center;gap:3px}
+.qty-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:300;line-height:1;flex-shrink:0}
+.qty-btn:active{background:var(--blue);border-color:var(--blue)}
+.qty-val{min-width:28px;text-align:center;font-size:12px;font-weight:700;font-family:'Space Mono',monospace}
+.add-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;white-space:nowrap}
+.add-btn:active{background:#2563eb}
+.no-results{text-align:center;padding:40px 16px;color:var(--muted);font-size:13px}
+
+/* ── STARS ── */
+.stars{display:flex;gap:1px;line-height:1}
+
+/* ── GOALS TAB ── */
+.g-content{padding:0 18px}
+.form-group{margin-bottom:13px}
+.f-label{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px}
+.f-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px;color:var(--text);font-size:14px;font-family:'Exo 2',sans-serif;font-weight:500;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.f-input:focus{border-color:var(--blue)}
+.f-input option{background:var(--bg2);color:var(--text)}
+.goal-pills{display:flex;gap:7px;flex-wrap:wrap}
+.goal-pill{padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--sub);transition:all .2s;letter-spacing:.02em}
+.goal-pill.on{border-color:var(--blue);background:rgba(59,130,246,.15);color:var(--blue2)}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}
+.r-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;text-align:center}
+.r-val{font-size:24px;font-weight:900;font-family:'Space Mono',monospace;line-height:1}
+.r-lbl{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.r-card.rcal .r-val{color:var(--blue2)}
+.r-card.rp .r-val{color:var(--P)}
+.r-card.rc .r-val{color:var(--C)}
+.r-card.rf .r-val{color:var(--F)}
+.primary-btn{width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:none;border-radius:13px;color:#fff;font-size:14px;font-weight:800;font-family:'Exo 2',sans-serif;cursor:pointer;letter-spacing:.02em;transition:all .15s;margin-top:6px;box-shadow:0 4px 16px rgba(59,130,246,.3)}
+.primary-btn:active{transform:scale(.97);background:linear-gradient(135deg,#2563eb,#1e40af)}
+.save-hint{font-size:11px;color:var(--sub);text-align:center;margin-top:8px}
+
+/* ── ADD FOOD TAB ── */
+.a-content{padding:0 18px}
+.star-inp{display:flex;gap:4px}
+.s-btn{font-size:26px;cursor:pointer;background:none;border:none;padding:2px;transition:transform .1s;line-height:1}
+.s-btn:active{transform:scale(1.25)}
+
+/* ── REPORTS MODAL ── */
+.period-row{display:flex;background:rgba(13,26,53,.8);border-radius:11px;margin:0 18px 14px;padding:3px}
+.p-tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:700;border-radius:9px;cursor:pointer;transition:all .2s;color:var(--muted)}
+.p-tab.on{background:var(--blue);color:#fff}
+.rpt-body{flex:1;overflow-y:auto;padding:0 18px;scrollbar-width:none}
+.rpt-body::-webkit-scrollbar{display:none}
+.stat-block{margin-bottom:16px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(59,130,246,.08)}
+.stat-row:last-child{border:none}
+.s-name{font-size:12px;color:var(--sub)}
+.s-val{font-size:14px;font-weight:700;font-family:'Space Mono',monospace}
+.chart-wrap{margin:12px 0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
+.chart-title{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.no-data{text-align:center;padding:40px 0;color:var(--muted);font-size:13px}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:58px;left:50%;transform:translateX(-50%);background:rgba(13,26,53,.97);border:1px solid var(--border);border-radius:20px;padding:9px 18px;font-size:12px;font-weight:700;z-index:500;white-space:nowrap;animation:tin .25s ease,tout .25s ease 2.1s forwards;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;pointer-events:none}}
+
+/* ── SYNC ── */
+.sync-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:10px;color:#22c55e;font-size:11px;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
+.sync-btn:active{background:rgba(34,197,94,.22)}
+.sync-btn.syncing{color:#94a3b8;border-color:var(--border);background:transparent;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ph-row{display:flex;align-items:flex-end;justify-content:space-between}
+.sync-url-wrap{margin:0 18px 12px}
+.sync-note{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:14px 0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script>
+'use strict';
+const {useState,useEffect,useCallback,useMemo,useRef} = React;
+
+/* ─────────── FOOD DB ─────────── */
+const DB0 = [
+  {id:'f01',name:'Fish Curry Rice',serving:'40ml rice + 2 ladles gravy',cal:210,p:4,c:31,f:8,rating:3.5,cat:['lunch']},
+  {id:'f02',name:'Sambar Rice',serving:'40ml rice + 2 ladles sambar',cal:220,p:7,c:40,f:3,rating:4.5,cat:['lunch']},
+  {id:'f03',name:'Rasam Rice',serving:'40ml rice + 2 spoons rasam',cal:155,p:4,c:33,f:1,rating:4,cat:['lunch']},
+  {id:'f04',name:'Fried Tuna',serving:'1 piece (125g)',cal:180,p:30,c:0,f:6,rating:4,cat:['lunch']},
+  {id:'f05',name:'Fried Iyala',serving:'1 piece (170g)',cal:360,p:31,c:0,f:25,rating:4.5,cat:['lunch']},
+  {id:'f06',name:'Fried Malabar Trevally',serving:'1 piece (90g)',cal:150,p:18,c:0,f:8,rating:4,cat:['lunch']},
+  {id:'f07',name:'Fried King Mackerel',serving:'1 piece (190g)',cal:340,p:39,c:0,f:20,rating:4.5,cat:['lunch']},
+  {id:'f08',name:'Tuna (Curry)',serving:'1 piece (125g)',cal:135,p:30,c:0,f:1,rating:3,cat:['lunch']},
+  {id:'f09',name:'Iyala (Curry)',serving:'1 piece (170g)',cal:280,p:31,c:0,f:17,rating:3,cat:['lunch']},
+  {id:'f10',name:'Trevally (Curry)',serving:'1 piece (90g)',cal:95,p:19,c:0,f:2,rating:3,cat:['lunch']},
+  {id:'f11',name:'King Mackerel (Curry)',serving:'1 piece (190g)',cal:260,p:39,c:0,f:11,rating:3,cat:['lunch']},
+  {id:'f12',name:'Fried Chicken Leg',serving:'1 whole (200g)',cal:330,p:38,c:2,f:18,rating:5,cat:['lunch']},
+  {id:'f13',name:'Fried Chicken (Small)',serving:'1 piece (75g)',cal:125,p:14,c:1,f:7,rating:4,cat:['lunch']},
+  {id:'f14',name:'Chicken Breast Masala',serving:'100g',cal:165,p:31,c:1,f:4,rating:4.5,cat:['lunch']},
+  {id:'f15',name:'Prawns (Curry)',serving:'100g',cal:100,p:21,c:0,f:1.5,rating:3,cat:['lunch']},
+  {id:'f16',name:'Omelet',serving:'2 whole + 1 white',cal:190,p:16,c:1,f:13,rating:4,cat:['lunch']},
+  {id:'f17',name:'Cooked Spinach',serving:'50g',cal:35,p:2,c:2,f:2,rating:2,cat:['lunch']},
+  {id:'f18',name:'Cooked Carrot',serving:'50g',cal:30,p:0.5,c:5,f:1,rating:1.5,cat:['lunch']},
+  {id:'f19',name:'Cooked Broccoli',serving:'50g',cal:25,p:1.5,c:3,f:1,rating:2,cat:['lunch']},
+  {id:'f20',name:'Fried Egg',serving:'1 whole egg',cal:90,p:6,c:0,f:7,rating:3.5,cat:['dinner']},
+  {id:'f21',name:'Masala Penne Pasta',serving:'80g dry + veg',cal:340,p:11,c:65,f:4,rating:3.5,cat:['breakfast']},
+  {id:'f22',name:'Chicken Sandwich',serving:'2 slices + 50g chicken',cal:330,p:21,c:31,f:12,rating:4.5,cat:['breakfast']},
+  {id:'f23',name:'Bread Omelette',serving:'2 slices brown + 2 eggs',cal:380,p:18,c:30,f:22,rating:4,cat:['breakfast']},
+  {id:'f24',name:'Chapati Egg Roll',serving:'1 roll (1 chap + 2 eggs)',cal:290,p:15,c:22,f:15,rating:4,cat:['breakfast']},
+  {id:'f25',name:'Paneer Palak Chapati',serving:'1 chap + 33g paneer',cal:230,p:11,c:22,f:11,rating:2,cat:['breakfast']},
+  {id:'f26',name:'Egg Sandwich',serving:'2 slices + 0.7 egg',cal:285,p:10,c:32,f:11,rating:4,cat:['breakfast']},
+  {id:'f27',name:'Black Channa Chapati',serving:'1 chap + 33g channa',cal:215,p:8,c:32,f:6,rating:2.5,cat:['breakfast']},
+  {id:'f28',name:'Idli + Sambar',serving:'3 idlis + sambar',cal:220,p:7,c:45,f:1,rating:3.5,cat:['breakfast']},
+  {id:'f29',name:'Sweet Potato Chapati',serving:'1 chap + 50g sweet potato',cal:185,p:4,c:31,f:5,rating:3,cat:['breakfast']},
+  {id:'f30',name:'French Toast',serving:'1 slice brown + 0.5 egg',cal:165,p:7,c:17,f:8,rating:4,cat:['breakfast']},
+  {id:'f31',name:'Chocos + Milk',serving:'1 bowl (30g + milk)',cal:210,p:6,c:34,f:5,rating:4.5,cat:['breakfast']},
+  {id:'f32',name:'Egg Dosa + Mayo',serving:'1 dosa + 1 egg + mayo',cal:265,p:10,c:20,f:16,rating:3,cat:['breakfast']},
+  {id:'f33',name:'Egg Dosa + Chutney',serving:'1 dosa + 1 egg + chutney',cal:205,p:10,c:22,f:9,rating:2.5,cat:['breakfast']},
+  {id:'f34',name:'Ghee Dosa + Sambar',serving:'1 dosa + ½ tsp ghee',cal:240,p:6,c:28,f:12,rating:3.5,cat:['breakfast','dinner']},
+  {id:'f35',name:'Avocado Juice',serving:'1 mug (300ml)',cal:320,p:4,c:35,f:22,rating:4.5,cat:['drinks']},
+  {id:'f36',name:'Orange Juice',serving:'1 mug (300ml)',cal:135,p:2,c:31,f:0.5,rating:3.5,cat:['drinks']},
+  {id:'f37',name:'Watermelon Juice',serving:'1 mug (300ml)',cal:90,p:1.5,c:22,f:0.5,rating:4.5,cat:['drinks']},
+  {id:'f38',name:'Tea',serving:'1 cup (milk + sugar)',cal:90,p:2,c:14,f:3,rating:4,cat:['drinks']},
+  {id:'f39',name:'Coffee',serving:'1 cup (milk + sugar)',cal:110,p:3,c:15,f:4,rating:4,cat:['drinks']},
+  {id:'f40',name:'Protein Milk (Choc)',serving:'1 bottle 320ml',cal:280,p:31,c:40,f:1.5,rating:5,cat:['drinks']},
+  {id:'f41',name:'Mango',serving:'1 medium',cal:200,p:2.5,c:50,f:1,rating:5,cat:['snacks']},
+  {id:'f42',name:'Strawberry',serving:'250g',cal:80,p:1.5,c:19,f:0.5,rating:5,cat:['snacks']},
+  {id:'f43',name:'Mandarin',serving:'1 small-medium',cal:40,p:0.5,c:10,f:0,rating:4.5,cat:['snacks']},
+  {id:'f44',name:'Watermelon',serving:'~280g piece',cal:85,p:1.5,c:21,f:0.5,rating:4.5,cat:['snacks']},
+  {id:'f45',name:'Pomegranate',serving:'200g seeds',cal:165,p:3.5,c:37,f:2,rating:4.5,cat:['snacks']},
+  {id:'f46',name:'Red Grapes',serving:'250g',cal:170,p:1.5,c:45,f:0.5,rating:4.5,cat:['snacks']},
+  {id:'f47',name:'Banana (Rasakadali)',serving:'1 small',cal:90,p:1,c:23,f:0.3,rating:4.5,cat:['snacks']},
+  {id:'f48',name:'Apple',serving:'1 medium',cal:95,p:0.5,c:25,f:0.3,rating:4.5,cat:['snacks']},
+  {id:'f49',name:'Orange',serving:'1 medium-large',cal:65,p:1.5,c:16,f:0.2,rating:4,cat:['snacks']},
+  {id:'f50',name:'Grapes (Green)',serving:'250g',cal:170,p:1.5,c:45,f:0.5,rating:4,cat:['snacks']},
+  {id:'f51',name:'Blueberries',serving:'125g',cal:70,p:1,c:18,f:0.5,rating:4,cat:['snacks']},
+  {id:'f52',name:'Red Banana',serving:'1 normal banana',cal:110,p:1.5,c:28,f:0.3,rating:4,cat:['snacks']},
+  {id:'f53',name:'Dates',serving:'1 date (Deglet Noor)',cal:20,p:0.2,c:5,f:0,rating:3.5,cat:['snacks']},
+  {id:'f54',name:'Banana (Ecuador)',serving:'1 large',cal:120,p:1.5,c:31,f:0.4,rating:3,cat:['snacks']},
+  {id:'f55',name:'Chicken Curry',serving:'5 pcs + 3 scoops curry',cal:310,p:32,c:10,f:15,rating:4.5,cat:['dinner']},
+  {id:'f56',name:'Paneer Butter Masala',serving:'40g paneer',cal:315,p:9,c:11,f:26,rating:4,cat:['dinner']},
+  {id:'f57',name:'Paneer Curry',serving:'40g paneer',cal:180,p:8,c:8,f:13,rating:3.5,cat:['dinner']},
+  {id:'f58',name:'Paneer Channa Curry',serving:'40g paneer + 200g channa',cal:375,p:26,c:62,f:14,rating:4,cat:['dinner']},
+  {id:'f59',name:'Channa Curry',serving:'200g channa',cal:280,p:18,c:54,f:3,rating:3.5,cat:['dinner']},
+  {id:'f60',name:'Veg Kurma',serving:'1 serving',cal:160,p:4,c:18,f:9,rating:2,cat:['dinner']},
+  {id:'f61',name:'Egg Curry',serving:'2 eggs',cal:290,p:14,c:12,f:20,rating:4,cat:['dinner']},
+  {id:'f62',name:'Wheat Parotta',serving:'1 pc (80g)',cal:300,p:8,c:40,f:13,rating:3.5,cat:['dinner']},
+  {id:'f63',name:'Chapati',serving:'1 pc (80g)',cal:100,p:3.5,c:17.5,f:1,rating:2.5,cat:['dinner']},
+  {id:'f64',name:'Dosa',serving:'1 pc',cal:100,p:2.5,c:15,f:2,rating:3.5,cat:['dinner','breakfast']},
+  {id:'f65',name:'Appam',serving:'1 pc',cal:140,p:2.5,c:20,f:2,rating:3,cat:['dinner']},
+  {id:'f66',name:'Poori',serving:'1 pc',cal:120,p:2.5,c:13,f:7,rating:2,cat:['dinner']},
+  {id:'f67',name:'Puttu',serving:'1 stem',cal:200,p:5,c:60,f:4,rating:4,cat:['breakfast']},
+];
+
+const CATS = ['all','breakfast','lunch','dinner','drinks','snacks'];
+const CAT_LBL = {all:'All 🍽️',breakfast:'Breakfast 🌅',lunch:'Lunch ☀️',dinner:'Dinner 🌙',drinks:'Drinks 🥤',snacks:'Snacks 🍎'};
+
+/* ─────────── UTILS ─────────── */
+const today = () => new Date().toISOString().split('T')[0];
+const rnd = n => Math.round(n);
+const fmt1 = n => Number(n).toFixed(1);
+
+const calcMacros = (w, h, age, act, goal) => {
+  const bmr = 10*w + 6.25*h - 5*age + 5;
+  const mults = {sedentary:1.2,light:1.375,moderate:1.55,active:1.725,veryActive:1.9};
+  const tdee = bmr * (mults[act] || 1.55);
+  // Protein: 0.8g per lb of bodyweight (1 kg = 2.205 lbs)
+  const prot = rnd(w * 2.205 * 0.8);
+  let cal, fat, carbs;
+  if (goal === 'bulk')      { cal=rnd(tdee+400);  fat=rnd(w*1.0); }
+  else if (goal === 'cut')  { cal=rnd(tdee-850);  fat=rnd(w*0.8); }  // ~1800 for Sijin
+  else if (goal === 'gain') { cal=rnd(tdee+200);  fat=rnd(w*0.9); }
+  else                      { cal=rnd(tdee-850);  fat=rnd(w*0.8); }  // lose fat ~1800
+  carbs = Math.max(50, rnd((cal - prot*4 - fat*9)/4));
+  return {cal, prot, carbs, fat};
+};
+
+const DEFAULT_GOALS = () => {
+  const m = calcMacros(60,160,14,'active','gain');
+  return {cal:m.cal, prot:m.prot, carbs:m.carbs, fat:m.fat, weight:60, height:160, age:14, act:'active', goal:'gain'};
+};
+
+/* ─────────── SVG DONUT ─────────── */
+const Donut = ({protein=0,carbs=0,fat=0,calories,size=80,sw=10}) => {
+  const cx=size/2, cy=size/2, r=(size-sw)/2;
+  const pCal=protein*4, cCal=carbs*4, fCal=fat*9;
+  const total=pCal+cCal+fCal;
+
+  const xy=(deg)=>{
+    const rad=(deg-90)*Math.PI/180;
+    return [cx+r*Math.cos(rad), cy+r*Math.sin(rad)];
+  };
+
+  const arc=(s,e)=>{
+    if(e-s<0.5) return null;
+    if(e-s>=359.9){
+      const [ax,ay]=xy(s); const [bx,by]=xy(s+180);
+      return `M${ax},${ay} A${r},${r},0,0,1,${bx},${by} A${r},${r},0,0,1,${ax},${ay}`;
+    }
+    const [x1,y1]=xy(s); const [x2,y2]=xy(e);
+    const lg=e-s>180?1:0;
+    return `M${x1},${y1} A${r},${r},0,${lg},1,${x2},${y2}`;
+  };
+
+  const fs=size<=70?10:13;
+  const sf=size<=70?8:10;
+
+  if(total===0){
+    return React.createElement('svg',{width:size,height:size,style:{display:'block'}},
+      React.createElement('circle',{cx,cy,r,fill:'none',stroke:'#1e293b',strokeWidth:sw}),
+      React.createElement('text',{x:cx,y:cy,textAnchor:'middle',dominantBaseline:'middle',fill:'#475569',fontSize:sf,fontFamily:'Space Mono,monospace'},'—')
+    );
+  }
+
+  const pa=(pCal/total)*360, ca=(cCal/total)*360, fa=(fCal/total)*360;
+  const segs=[
+    {d:arc(0,pa),col:'#ef4444'},
+    {d:arc(pa,pa+ca),col:'#3b82f6'},
+    {d:arc(pa+ca,pa+ca+fa),col:'#eab308'},
+  ].filter(s=>s.d);
+
+  const calShow = calories !== undefined ? rnd(calories) : rnd(total/4);
+
+  return React.createElement('svg',{width:size,height:size,style:{display:'block'}},
+    React.createElement('circle',{cx,cy,r,fill:'none',stroke:'#1e293b',strokeWidth:sw}),
+    ...segs.map((s,i)=>React.createElement('path',{key:i,d:s.d,fill:'none',stroke:s.col,strokeWidth:sw,strokeLinecap:'butt'})),
+    calories!==undefined && React.createElement('text',{x:cx,y:cy-4,textAnchor:'middle',fill:'#f1f5f9',fontSize:fs,fontWeight:700,fontFamily:'Space Mono,monospace'},calShow),
+    calories!==undefined && React.createElement('text',{x:cx,y:cy+8,textAnchor:'middle',fill:'#64748b',fontSize:sf-1,fontFamily:'Exo 2,sans-serif'},'kcal')
+  );
+};
+
+/* ─────────── STARS ─────────── */
+const Stars = ({rating,size=9}) =>
+  React.createElement('div',{className:'stars'},
+    [1,2,3,4,5].map(i=>{
+      const filled=rating>=i, half=!filled&&rating>=i-0.5;
+      return React.createElement('span',{key:i,style:{fontSize:size,color:filled||half?'#eab308':'#334155',lineHeight:1}},
+        filled?'★':half?'⭐':'☆');
+    })
+  );
+
+/* ─────────── STAR INPUT ─────────── */
+const StarInput = ({value,onChange}) => {
+  const [hov,setHov]=useState(0);
+  return React.createElement('div',{className:'star-inp'},
+    [1,2,3,4,5].map(i=>
+      React.createElement('button',{
+        key:i,type:'button',className:'s-btn',
+        onMouseEnter:()=>setHov(i),onMouseLeave:()=>setHov(0),
+        onClick:()=>onChange(i),
+        style:{color:(hov||value)>=i?'#eab308':'#334155'}
+      },'★')
+    )
+  );
+};
+
+/* ─────────── TOAST ─────────── */
+const Toast = ({msg,done}) => {
+  useEffect(()=>{const t=setTimeout(done,2400);return()=>clearTimeout(t)},[]);
+  return React.createElement('div',{className:'toast'},msg);
+};
+
+/* ─────────── BAR CHART ─────────── */
+const BarChart = ({data,goalCal}) => {
+  if(!data||!data.length) return React.createElement('div',{className:'no-data'},'No data yet');
+  const maxV = Math.max(...data.map(d=>d.cal), goalCal||0, 100)*1.1;
+  const W=340,H=110,pt=8,pl=0,pr=0,pb=22;
+  const cW=W-pl-pr, cH=H-pt-pb;
+  const bw=Math.max(4, Math.floor((cW/data.length)*0.65));
+  const gap=cW/data.length;
+
+  return React.createElement('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`,style:{overflow:'visible'}},
+    goalCal && React.createElement('line',{
+      x1:pl,y1:pt+cH*(1-goalCal/maxV),x2:W-pr,y2:pt+cH*(1-goalCal/maxV),
+      stroke:'#3b82f6',strokeWidth:1,strokeDasharray:'4,3',opacity:.5
+    }),
+    ...data.map((d,i)=>{
+      const bH=Math.max(2,(d.cal/maxV)*cH);
+      const x=pl+i*gap+gap/2-bw/2;
+      const y=pt+cH-bH;
+      const col=goalCal?(d.cal>=goalCal?'#22c55e':'#ef4444'):'#3b82f6';
+      return React.createElement('rect',{key:i,x,y,width:bw,height:bH,fill:col,rx:3,opacity:.85});
+    }),
+    ...data.map((d,i)=>{
+      if(data.length>10&&i%Math.ceil(data.length/7)!==0) return null;
+      const x=pl+i*gap+gap/2;
+      return React.createElement('text',{key:'l'+i,x,y:H-4,textAnchor:'middle',fill:'#475569',fontSize:7,fontFamily:'Space Mono,monospace'},d.date.slice(5));
+    }).filter(Boolean)
+  );
+};
+
+/* ─────────── FOOD CARD (picker) ─────────── */
+const FoodCard = ({food,onAdd}) => {
+  const [qty,setQty]=useState(1);
+  const step=(d)=>setQty(q=>Math.max(0.5,parseFloat((q+d).toFixed(1))));
+  return React.createElement('div',{className:'f-card'},
+    React.createElement('div',{style:{flexShrink:0}},
+      React.createElement(Donut,{protein:food.p*qty,carbs:food.c*qty,fat:food.f*qty,calories:food.cal*qty,size:70,sw:9})
+    ),
+    React.createElement('div',{className:'f-info'},
+      React.createElement('div',{className:'f-name'},food.name),
+      React.createElement('div',{className:'f-serv'},food.serving),
+      React.createElement('div',{className:'f-kcal'},`${rnd(food.cal*qty)} kcal`)
+    ),
+    React.createElement('div',{className:'f-stars'},
+      React.createElement(Stars,{rating:food.rating,size:9})
+    ),
+    React.createElement('div',{className:'f-actions'},
+      React.createElement('button',{className:'qty-btn',onClick:()=>step(-0.5)},'−'),
+      React.createElement('span',{className:'qty-val'},qty%1===0?qty:fmt1(qty)),
+      React.createElement('button',{className:'qty-btn',onClick:()=>step(0.5)},'+'),
+      React.createElement('button',{className:'add-btn',onClick:()=>{onAdd(food.id,qty);setQty(1)}},'Add')
+    )
+  );
+};
+
+/* ─────────── FOOD PICKER ─────────── */
+const FoodPicker = ({foods,onAdd,onClose}) => {
+  const [search,setSearch]=useState('');
+  const [cat,setCat]=useState('all');
+  const filtered=useMemo(()=>foods.filter(f=>{
+    const cm=cat==='all'||f.cat.includes(cat);
+    const sm=!search||f.name.toLowerCase().includes(search.toLowerCase());
+    return cm&&sm;
+  }),[foods,cat,search]);
+  return React.createElement('div',{className:'overlay',onClick:e=>{if(e.target===e.currentTarget)onClose()}},
+    React.createElement('div',{className:'sheet'},
+      React.createElement('div',{className:'sheet-handle'}),
+      React.createElement('div',{className:'sheet-head'},
+        React.createElement('div',{className:'sheet-title'},'Log Food'),
+        React.createElement('div',{className:'close-btn',onClick:onClose},'✕')
+      ),
+      React.createElement('div',{className:'search'},
+        React.createElement('span',{className:'search-ico'},'🔍'),
+        React.createElement('input',{placeholder:'Search foods…',value:search,onChange:e=>setSearch(e.target.value)})
+      ),
+      React.createElement('div',{className:'cat-row'},
+        CATS.map(c=>React.createElement('div',{key:c,className:`cat-pill${cat===c?' on':''}`,onClick:()=>setCat(c)},CAT_LBL[c]))
+      ),
+      React.createElement('div',{className:'cards-list'},
+        filtered.length?filtered.map(f=>React.createElement(FoodCard,{key:f.id,food:f,onAdd})):
+        React.createElement('div',{className:'no-results'},'No foods found')
+      )
+    )
+  );
+};
+
+/* ─────────── REPORTS ─────────── */
+const Reports = ({allLogs,goals,foods,onClose}) => {
+  const [period,setPeriod]=useState('weekly');
+  const days=period==='weekly'?7:period==='monthly'?30:365;
+  const now=new Date();
+
+  const data=useMemo(()=>{
+    const arr=[];
+    for(let i=days-1;i>=0;i--){
+      const d=new Date(now);d.setDate(d.getDate()-i);
+      const key=d.toISOString().split('T')[0];
+      const log=allLogs[key]||[];
+      let cal=0,prot=0,carbs=0,fat=0;
+      log.forEach(e=>{
+        const food=foods.find(f=>f.id===e.foodId);
+        if(!food) return;
+        cal+=food.cal*e.servings; prot+=food.p*e.servings;
+        carbs+=food.c*e.servings; fat+=food.f*e.servings;
+      });
+      if(log.length>0) arr.push({date:key,cal:rnd(cal),prot:rnd(prot),carbs:rnd(carbs),fat:rnd(fat)});
+      else arr.push({date:key,cal:0,prot:0,carbs:0,fat:0});
+    }
+    return arr;
+  },[period,allLogs,foods]);
+
+  const activeDays=data.filter(d=>d.cal>0);
+  const avg=f=>activeDays.length?rnd(activeDays.reduce((s,d)=>s+d[f],0)/activeDays.length):0;
+  const avgCal=avg('cal'), avgP=avg('prot'), avgC=avg('carbs'), avgF=avg('fat');
+
+  const goalAchieved=activeDays.filter(d=>{
+    const g=goals.goal;
+    const protOk=d.prot>=goals.prot;
+    if(g==='cut'||g==='lose') return d.cal<=goals.cal&&protOk;
+    return d.cal>=goals.cal*0.9&&protOk;
+  }).length;
+
+  return React.createElement('div',{className:'overlay',onClick:e=>{if(e.target===e.currentTarget)onClose()}},
+    React.createElement('div',{className:'sheet'},
+      React.createElement('div',{className:'sheet-handle'}),
+      React.createElement('div',{className:'sheet-head'},
+        React.createElement('div',{className:'sheet-title'},'📊 Reports'),
+        React.createElement('div',{className:'close-btn',onClick:onClose},'✕')
+      ),
+      React.createElement('div',{className:'period-row'},
+        ['weekly','monthly','yearly'].map(p=>
+          React.createElement('div',{key:p,className:`p-tab${period===p?' on':''}`,onClick:()=>setPeriod(p)},
+            p.charAt(0).toUpperCase()+p.slice(1))
+        )
+      ),
+      React.createElement('div',{className:'rpt-body'},
+        React.createElement('div',{className:'stat-block'},
+          React.createElement('div',{className:'stat-row'},
+            React.createElement('span',{className:'s-name'},'Days tracked'),
+            React.createElement('span',{className:'s-val'},`${activeDays.length} / ${days}`)
+          ),
+          React.createElement('div',{className:'stat-row'},
+            React.createElement('span',{className:'s-name'},'Goals hit 🎯'),
+            React.createElement('span',{className:'s-val',style:{color:'#22c55e'}},`${goalAchieved}d`)
+          ),
+          React.createElement('div',{className:'stat-row'},
+            React.createElement('span',{className:'s-name'},'Avg Calories'),
+            React.createElement('span',{className:'s-val',style:{color:'#60a5fa'}},`${avgCal} / ${goals.cal}`)
+          ),
+          React.createElement('div',{className:'stat-row'},
+            React.createElement('span',{className:'s-name'},'Avg Protein'),
+            React.createElement('span',{className:'s-val',style:{color:'#ef4444'}},`${avgP}g / ${goals.prot}g`)
+          ),
+          React.createElement('div',{className:'stat-row'},
+            React.createElement('span',{className:'s-name'},'Avg Carbs'),
+            React.createElement('span',{className:'s-val',style:{color:'#3b82f6'}},`${avgC}g / ${goals.carbs}g`)
+          ),
+          React.createElement('div',{className:'stat-row'},
+            React.createElement('span',{className:'s-name'},'Avg Fat'),
+            React.createElement('span',{className:'s-val',style:{color:'#eab308'}},`${avgF}g / ${goals.fat}g`)
+          )
+        ),
+        React.createElement('div',{className:'chart-wrap'},
+          React.createElement('div',{className:'chart-title'},'Daily Calories'),
+          React.createElement(BarChart,{data,goalCal:goals.cal})
+        )
+      )
+    )
+  );
+};
+
+/* ─────────── HOME TAB ─────────── */
+const HomeTab = ({foods,todayLog,totals,goals,onRemove,onPicker,onReports,onSync,syncing,lastSync}) => {
+  const pPct=goals.prot>0?Math.min(1,totals.prot/goals.prot):0;
+  const cPct=goals.carbs>0?Math.min(1,totals.carbs/goals.carbs):0;
+  const fPct=goals.fat>0?Math.min(1,totals.fat/goals.fat):0;
+  const calColor=totals.cal>goals.cal?'#ef4444':totals.cal>goals.cal*0.85?'#eab308':'#f1f5f9';
+  const d=new Date();
+  const dayStr=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+  return React.createElement('div',{className:'screen'},
+    React.createElement('div',{className:'ph'},
+      React.createElement('div',{className:'ph-row'},
+        React.createElement('div',null,
+          React.createElement('div',{className:'ph-title'},"Sijin's Fitness"),
+          React.createElement('div',{className:'ph-sub'},dayStr)
+        ),
+        React.createElement('button',{
+          className:`sync-btn${syncing?' syncing':''}`,
+          onClick:onSync,
+          title:lastSync?`Last synced ${lastSync}`:'Sync to Google Sheets'
+        },syncing?'⟳ Syncing…':(lastSync?`✓ ${lastSync}`:'☁️ Sync'))
+      )
+    ),
+    // Summary card
+    React.createElement('div',{className:'sum-card'},
+      React.createElement('div',{className:'sum-inner'},
+        React.createElement(Donut,{protein:totals.prot,carbs:totals.carbs,fat:totals.fat,calories:totals.cal,size:120,sw:13}),
+        React.createElement('div',{className:'sum-right'},
+          React.createElement('div',{className:'cal-row'},
+            React.createElement('div',{className:'cal-num',style:{color:calColor}},rnd(totals.cal)),
+            React.createElement('div',{className:'cal-denom'},`of ${goals.cal} kcal goal`)
+          ),
+          React.createElement('div',{className:'macro-list'},
+            [
+              {key:'prot',col:'#ef4444',lbl:'P',val:totals.prot,goal:goals.prot,pct:pPct},
+              {key:'carbs',col:'#3b82f6',lbl:'C',val:totals.carbs,goal:goals.carbs,pct:cPct},
+              {key:'fat',col:'#eab308',lbl:'F',val:totals.fat,goal:goals.fat,pct:fPct},
+            ].map(m=>React.createElement('div',{key:m.key,className:'macro-row'},
+              React.createElement('div',{className:'m-dot',style:{background:m.col}}),
+              React.createElement('span',{className:'m-label'},m.lbl),
+              React.createElement('div',{className:'m-bar-wrap'},
+                React.createElement('div',{className:'m-bar',style:{width:`${m.pct*100}%`,background:m.col}})
+              ),
+              React.createElement('span',{className:'m-val'},`${rnd(m.val)}g`),
+              React.createElement('span',{className:'m-goal'},` /${m.goal}g`)
+            ))
+          )
+        )
+      )
+    ),
+    // Log table
+    todayLog.length===0
+      ? React.createElement('div',{className:'empty-log'},
+          React.createElement('div',{className:'empty-icon'},'🍽️'),
+          React.createElement('div',{className:'empty-txt'},'Nothing logged yet — tap + to add')
+        )
+      : React.createElement('div',null,
+          React.createElement('div',{className:'sec-title'},"Today's Log"),
+          React.createElement('div',{className:'log-wrap'},
+            React.createElement('table',{className:'log-table'},
+              React.createElement('thead',null,React.createElement('tr',null,
+                React.createElement('th',null,'Food'),
+                React.createElement('th',null,'Srv'),
+                React.createElement('th',null,'Cal'),
+                React.createElement('th',null,'P'),
+                React.createElement('th',null,'C'),
+                React.createElement('th',null,'F'),
+                React.createElement('th',null,'')
+              )),
+              React.createElement('tbody',null,
+                todayLog.map(entry=>{
+                  const food=foods.find(f=>f.id===entry.foodId);
+                  if(!food) return null;
+                  const sv=entry.servings;
+                  return React.createElement('tr',{key:entry.id},
+                    React.createElement('td',null,
+                      React.createElement('div',{className:'food-nm'},food.name),
+                      React.createElement('div',{className:'food-sv'},`${sv%1===0?sv:fmt1(sv)}x`)
+                    ),
+                    React.createElement('td',{className:'mono'},sv%1===0?sv:fmt1(sv)),
+                    React.createElement('td',{className:'mono',style:{color:'#60a5fa'}},rnd(food.cal*sv)),
+                    React.createElement('td',{className:'mono',style:{color:'#ef4444'}},rnd(food.p*sv)),
+                    React.createElement('td',{className:'mono',style:{color:'#3b82f6'}},rnd(food.c*sv)),
+                    React.createElement('td',{className:'mono',style:{color:'#eab308'}},rnd(food.f*sv)),
+                    React.createElement('td',null,
+                      React.createElement('button',{className:'del-btn',onClick:()=>onRemove(entry.id)},'✕')
+                    )
+                  );
+                })
+              )
+            )
+          )
+        ),
+    React.createElement('button',{className:'rpt-btn',onClick:onReports},'📊  View Reports')
+  );
+};
+
+/* ─────────── GOALS TAB ─────────── */
+const GoalsTab = ({goals,onSave}) => {
+  const [w,setW]=useState(String(goals.weight));
+  const [h,setH]=useState(String(goals.height));
+  const [age,setAge]=useState(String(goals.age));
+  const [act,setAct]=useState(goals.act);
+  const [goal,setGoal]=useState(goals.goal);
+  const [res,setRes]=useState({cal:goals.cal,prot:goals.prot,carbs:goals.carbs,fat:goals.fat});
+  const [saved,setSaved]=useState(false);
+
+  const calc=()=>{
+    const m=calcMacros(parseFloat(w)||60,parseFloat(h)||160,parseInt(age)||14,act,goal);
+    setRes(m);
+  };
+
+  const save=()=>{
+    onSave({...res,weight:parseFloat(w)||60,height:parseFloat(h)||160,age:parseInt(age)||14,act,goal});
+    setSaved(true);setTimeout(()=>setSaved(false),1500);
+  };
+
+  const GOAL_OPTS=[{v:'bulk',l:'Bulk 💪'},{v:'cut',l:'Cut 🔥'},{v:'gain',l:'Gain Muscle 🏋️'},{v:'lose',l:'Lose Fat ⚡'}];
+  const ACT_OPTS=[{v:'sedentary',l:'Sedentary'},{v:'light',l:'Lightly Active'},{v:'moderate',l:'Moderately Active'},{v:'active',l:'Very Active (4-5d)'},{v:'veryActive',l:'Athlete (6-7d)'}];
+
+  return React.createElement('div',{className:'screen'},
+    React.createElement('div',{className:'ph'},
+      React.createElement('div',{className:'ph-title'},'Goals'),
+      React.createElement('div',{className:'ph-sub'},'Calculate your daily targets')
+    ),
+    React.createElement('div',{className:'g-content'},
+      React.createElement('div',{className:'card',style:{padding:'16px',marginBottom:12}},
+        React.createElement('div',{style:{display:'flex',gap:10,marginBottom:12}},
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Weight (kg)'),
+            React.createElement('input',{className:'f-input',type:'number',value:w,onChange:e=>setW(e.target.value),inputMode:'decimal'})
+          ),
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Height (cm)'),
+            React.createElement('input',{className:'f-input',type:'number',value:h,onChange:e=>setH(e.target.value),inputMode:'decimal'})
+          ),
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Age'),
+            React.createElement('input',{className:'f-input',type:'number',value:age,onChange:e=>setAge(e.target.value),inputMode:'numeric'})
+          )
+        ),
+        React.createElement('div',{className:'form-group'},
+          React.createElement('label',{className:'f-label'},'Activity Level'),
+          React.createElement('select',{className:'f-input',value:act,onChange:e=>setAct(e.target.value)},
+            ACT_OPTS.map(o=>React.createElement('option',{key:o.v,value:o.v},o.l))
+          )
+        ),
+        React.createElement('div',{className:'form-group'},
+          React.createElement('label',{className:'f-label'},'Goal'),
+          React.createElement('div',{className:'goal-pills'},
+            GOAL_OPTS.map(o=>React.createElement('div',{key:o.v,className:`goal-pill${goal===o.v?' on':''}`,onClick:()=>setGoal(o.v)},o.l))
+          )
+        ),
+        React.createElement('button',{className:'primary-btn',onClick:calc},'⚡ Calculate')
+      ),
+      React.createElement('div',{className:'results-grid'},
+        [{cls:'rcal',col:'#60a5fa',v:res.cal,lbl:'Calories'},
+         {cls:'rp',col:'#ef4444',v:res.prot,lbl:'Protein (g)'},
+         {cls:'rc',col:'#3b82f6',v:res.carbs,lbl:'Carbs (g)'},
+         {cls:'rf',col:'#eab308',v:res.fat,lbl:'Fat (g)'}].map(r=>
+          React.createElement('div',{key:r.cls,className:`r-card ${r.cls}`},
+            React.createElement('div',{className:'r-val'},r.v),
+            React.createElement('div',{className:'r-lbl'},r.lbl)
+          )
+        )
+      ),
+      React.createElement('button',{className:'primary-btn save-btn',style:{opacity:saved?.7:1},onClick:save},saved?'✓ Saved!':'💾 Save as Daily Goals'),
+      React.createElement('div',{className:'save-hint'},'Current goals: '+goals.cal+' kcal | P '+goals.prot+'g | C '+goals.carbs+'g | F '+goals.fat+'g')
+    )
+  );
+};
+
+/* ─────────── ADD FOOD TAB ─────────── */
+const AddFoodTab = ({onAdd}) => {
+  const blank={name:'',cat:'breakfast',serving:'',cal:'',p:'',c:'',f:'',rating:3};
+  const [form,setForm]=useState(blank);
+  const [ok,setOk]=useState(false);
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+
+  const submit=()=>{
+    if(!form.name.trim()||!form.cal) return;
+    onAdd({
+      id:'u'+Date.now(),name:form.name.trim(),serving:form.serving||'1 serving',
+      cal:parseFloat(form.cal)||0,p:parseFloat(form.p)||0,c:parseFloat(form.c)||0,f:parseFloat(form.f)||0,
+      rating:form.rating,cat:[form.cat]
+    });
+    setForm(blank);setOk(true);setTimeout(()=>setOk(false),1500);
+  };
+
+  const CAT_OPTS=[{v:'breakfast',l:'Breakfast'},{v:'lunch',l:'Lunch'},{v:'dinner',l:'Dinner'},{v:'drinks',l:'Drinks'},{v:'snacks',l:'Snacks'}];
+  const inp=(label,key,type='text',mode)=>React.createElement('div',{className:'form-group'},
+    React.createElement('label',{className:'f-label'},label),
+    React.createElement('input',{className:'f-input',type:type,inputMode:mode,value:form[key],onChange:e=>set(key,e.target.value)})
+  );
+
+  return React.createElement('div',{className:'screen'},
+    React.createElement('div',{className:'ph'},
+      React.createElement('div',{className:'ph-title'},'Add Food'),
+      React.createElement('div',{className:'ph-sub'},'Add to your food library')
+    ),
+    React.createElement('div',{className:'a-content'},
+      React.createElement('div',{className:'card',style:{padding:'16px'}},
+        inp('Food Name','name','text'),
+        React.createElement('div',{className:'form-group'},
+          React.createElement('label',{className:'f-label'},'Category'),
+          React.createElement('select',{className:'f-input',value:form.cat,onChange:e=>set('cat',e.target.value)},
+            CAT_OPTS.map(o=>React.createElement('option',{key:o.v,value:o.v},o.l))
+          )
+        ),
+        inp('Serving Size (description)','serving','text'),
+        React.createElement('div',{style:{display:'flex',gap:9}},
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Calories'),
+            React.createElement('input',{className:'f-input',type:'number',inputMode:'decimal',value:form.cal,onChange:e=>set('cal',e.target.value)})
+          ),
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Protein (g)'),
+            React.createElement('input',{className:'f-input',type:'number',inputMode:'decimal',value:form.p,onChange:e=>set('p',e.target.value)})
+          )
+        ),
+        React.createElement('div',{style:{display:'flex',gap:9,marginTop:9}},
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Carbs (g)'),
+            React.createElement('input',{className:'f-input',type:'number',inputMode:'decimal',value:form.c,onChange:e=>set('c',e.target.value)})
+          ),
+          React.createElement('div',{style:{flex:1}},
+            React.createElement('label',{className:'f-label'},'Fat (g)'),
+            React.createElement('input',{className:'f-input',type:'number',inputMode:'decimal',value:form.f,onChange:e=>set('f',e.target.value)})
+          )
+        ),
+        React.createElement('div',{className:'form-group',style:{marginTop:13}},
+          React.createElement('label',{className:'f-label'},'Your Rating'),
+          React.createElement(StarInput,{value:form.rating,onChange:v=>set('rating',v)})
+        ),
+        React.createElement('button',{
+          className:'primary-btn',style:{opacity:ok?.7:1},onClick:submit
+        },ok?'✓ Added!':'+ Add to Library')
+      )
+    )
+  );
+};
+
+/* ─────────── APP ─────────── */
+const App = () => {
+  const [tab,setTab]=useState('home');
+  const [showPicker,setShowPicker]=useState(false);
+  const [showReports,setShowReports]=useState(false);
+  const [toast,setToast]=useState(null);
+  const [syncing,setSyncing]=useState(false);
+  const [lastSync,setLastSync]=useState('');
+  const [dateKey,setDateKey]=useState(today()); // forces re-render on day change
+
+  // Daily refresh: check every 60s if date rolled over
+  useEffect(()=>{
+    const iv=setInterval(()=>{
+      const t=today();
+      if(t!==dateKey) setDateKey(t);
+    },60000);
+    return()=>clearInterval(iv);
+  },[dateKey]);
+
+  const [customFoods,setCustomFoods]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('sfa_custom')||'[]')}catch{return []}
+  });
+  const [allLogs,setAllLogs]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('sfa_logs')||'{}')}catch{return {}}
+  });
+  const [goals,setGoals]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('sfa_goals')||'null')||DEFAULT_GOALS()}catch{return DEFAULT_GOALS()}
+  });
+  const [syncUrl,setSyncUrlState]=useState(()=>localStorage.getItem('sfa_sync_url')||'');
+
+  useEffect(()=>{localStorage.setItem('sfa_custom',JSON.stringify(customFoods))},[customFoods]);
+  useEffect(()=>{localStorage.setItem('sfa_logs',JSON.stringify(allLogs))},[allLogs]);
+  useEffect(()=>{localStorage.setItem('sfa_goals',JSON.stringify(goals))},[goals]);
+
+  const allFoods=useMemo(()=>[...DB0,...customFoods],[customFoods]);
+  const todayKey=dateKey;
+  const todayLog=allLogs[todayKey]||[];
+
+  const totals=useMemo(()=>todayLog.reduce((acc,e)=>{
+    const f=allFoods.find(x=>x.id===e.foodId);
+    if(!f) return acc;
+    return {cal:acc.cal+f.cal*e.servings, prot:acc.prot+f.p*e.servings, carbs:acc.carbs+f.c*e.servings, fat:acc.fat+f.f*e.servings};
+  },{cal:0,prot:0,carbs:0,fat:0}),[todayLog,allFoods]);
+
+  const syncToSheets = useCallback(async ()=>{
+    const url = syncUrl || localStorage.getItem('sfa_sync_url');
+    if(!url){
+      const entered = window.prompt('Paste your Google Apps Script URL:');
+      if(!entered) return;
+      localStorage.setItem('sfa_sync_url', entered);
+      setSyncUrlState(entered);
+      return;
+    }
+    setSyncing(true);
+    try{
+      const logData = todayLog.map(e=>{
+        const fd=allFoods.find(x=>x.id===e.foodId);
+        if(!fd) return null;
+        return {name:fd.name,servings:e.servings,cal:rnd(fd.cal*e.servings),protein:rnd(fd.p*e.servings),carbs:rnd(fd.c*e.servings),fat:rnd(fd.f*e.servings)};
+      }).filter(Boolean);
+      await fetch(url,{
+        method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          date:todayKey,log:logData,
+          totals:{cal:rnd(totals.cal),protein:rnd(totals.prot),carbs:rnd(totals.carbs),fat:rnd(totals.fat)},
+          goals:{cal:goals.cal,protein:goals.prot,carbs:goals.carbs,fat:goals.fat}
+        })
+      });
+      const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      setLastSync(t);
+      showToast('✓ Synced to Sheets!');
+    }catch(err){
+      showToast('Sync failed — check URL');
+    }finally{
+      setSyncing(false);
+    }
+  },[syncUrl,todayLog,allFoods,todayKey,totals,goals]);
+
+  const addToLog=useCallback((foodId,servings)=>{
+    const food=allFoods.find(f=>f.id===foodId);
+    setAllLogs(prev=>({...prev,[todayKey]:[...(prev[todayKey]||[]),{id:Date.now().toString(),foodId,servings}]}));
+    if(food) showToast(`✓ ${food.name}`);
+  },[allFoods,todayKey]);
+
+  const removeFromLog=useCallback((logId)=>{
+    setAllLogs(prev=>({...prev,[todayKey]:(prev[todayKey]||[]).filter(e=>e.id!==logId)}));
+  },[todayKey]);
+
+  const saveGoals=useCallback((g)=>setGoals(g),[]);
+  const addCustomFood=useCallback((food)=>{setCustomFoods(p=>[...p,food])},[]);
+  const showToast=(msg)=>{setToast(null);setTimeout(()=>setToast(msg),50)};
+
+  const NAV=[
+    {id:'home',icon:'🏠',lbl:'Home'},
+    {id:'goals',icon:'🎯',lbl:'Goals'},
+    {id:'add',icon:'➕',lbl:'Add Food'},
+  ];
+
+  return React.createElement('div',{style:{height:'100dvh',display:'flex',flexDirection:'column',overflow:'hidden',background:'var(--bg)'}},
+    tab==='home'&&React.createElement(HomeTab,{foods:allFoods,todayLog,totals,goals,onRemove:removeFromLog,onPicker:()=>setShowPicker(true),onReports:()=>setShowReports(true),onSync:syncToSheets,syncing,lastSync}),
+    tab==='goals'&&React.createElement(GoalsTab,{goals,onSave:saveGoals}),
+    tab==='add'&&React.createElement(AddFoodTab,{onAdd:addCustomFood}),
+
+    tab==='home'&&React.createElement('button',{className:'fab',onClick:()=>setShowPicker(true)},'+'),
+    showPicker&&React.createElement(FoodPicker,{foods:allFoods,onAdd:addToLog,onClose:()=>setShowPicker(false)}),
+    showReports&&React.createElement(Reports,{allLogs,goals,foods:allFoods,onClose:()=>setShowReports(false)}),
+    toast&&React.createElement(Toast,{msg:toast,done:()=>setToast(null)}),
+
+    React.createElement('div',{className:'nav'},
+      NAV.map(n=>React.createElement('div',{key:n.id,className:`nav-item${tab===n.id?' on':''}`,onClick:()=>setTab(n.id)},
+        React.createElement('span',{className:'nav-icon'},n.icon),
+        n.lbl
+      ))
+    )
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
