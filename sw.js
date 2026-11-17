@@ -1,5 +1,5 @@
 // Bump VER on every deploy so phones drop the old cache.
-const VER = 'sfa-v2-1';
+const VER = 'sfa-v21-1';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png'];
 
 self.addEventListener('install', e => {
